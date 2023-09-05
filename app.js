@@ -45,21 +45,47 @@ const generateFRQ = async (topic) => {
     
     evaluationMetrics = await chatgpt(prompt2); // Store the metrics for later use
     const response = await chatgpt(prompt);
-    console.log(response);
+    console.log(`\n${response}`);
     console.log("\nPlease answer the above free response question:");
     isAnsweringFRQ = true;
 };
 
-const evaluateResponse = async (response) => {
-    const prompt = `You are an AI-powered educational assistant designed to evaluate 4th-grade students free response questions. 
+const qualityCheck = async (feedback) => {
 
-    Your task is to evaluate the student's response based on the following evaluation metrics: ${evaluationMetrics}. 
-    
-    Student's answer: ${response}`;
+    const prompt = `Please evaluate the feedback provided by a teacher on a 4th-grade student's writing assignment. Consider if the feedback is clear, relevant, and constructive for a 4th grader. If the feedback seems appropriate, return "pass". If not, return "fail". Feedback: ${feedback}`
 
-    const evaluation = await chatgpt(prompt);
-    console.log(`${evaluation}`);
+    const response = await chatgpt(prompt);
+    return response;
 };
+
+const evaluateResponse = async (response) => {
+    let feedback;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    do {
+        const prompt = `You are an AI-powered educational assistant designed to evaluate 4th-grade students free response questions. 
+        Your task is to evaluate the student's response based on the following evaluation metrics: ${evaluationMetrics}. 
+        Student's answer: ${response}`;
+
+        feedback = await chatgpt(prompt);
+        const qualityCheckResult = await qualityCheck(feedback);
+
+        if (qualityCheckResult === "pass") {
+            console.log(`${feedback}`);
+            break;
+        }
+        console.log(`failed`)
+        console.log(`${feedback}`);
+        attempts++;
+    } while (attempts < maxAttempts);
+
+    if (attempts === maxAttempts) {
+        console.log("\nWe are having some difficulty providing feedback at the moment..."); // Feedback didn't pass
+        rl.close();
+    }
+};
+
 
 const askQuestion = () => {
     rl.question('\nYou: ', async (input) => {
