@@ -12,6 +12,11 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
+rl.on('close', () => {
+    console.log("\nGoodbye! Thanks for using EduGenAI. 🌟");
+    process.exit(0); // Exit the process gracefully
+});
+
 let studentInterestTopic = null; // Variable to store the Student Interest Topic
 let isAnsweringFRQ = false; // Flag to check if the user is answering the Free Response Question
 let evaluationMetrics = null; // Variable to store the evaluation metrics
@@ -73,16 +78,18 @@ const evaluateResponse = async (response) => {
 
         if (qualityCheckResult === "pass") {
             console.log(`${feedback}`);
-            break;
+            rl.close();
+            return;  
         }
-        console.log(`failed`)
-        console.log(`${feedback}`);
+
         attempts++;
     } while (attempts < maxAttempts);
 
     if (attempts === maxAttempts) {
-        console.log("\nWe are having some difficulty providing feedback at the moment..."); // Feedback didn't pass
+        console.log(`\nWe are having some difficulty providing feedback at the moment...`); // Feedback didn't pass
         rl.close();
+    } else {
+        askQuestion();  
     }
 };
 
@@ -104,7 +111,6 @@ const askQuestion = () => {
             const studentResponse = input; // Store the user's response to the FRQ
             await evaluateResponse(studentResponse); 
             isAnsweringFRQ = false; // Reset the flag after evaluating the answer
-            console.log("\nWould you like to explore another topic or have any other questions?");
             askQuestion(); 
         } else {
             const response = await chatgpt(input);
