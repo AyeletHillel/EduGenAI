@@ -71,6 +71,7 @@ const evaluateResponse = async (response) => {
     do {
         const prompt = `You are an AI-powered educational assistant designed to evaluate 4th-grade students free response questions. 
         Your task is to evaluate the student's response based on the following evaluation metrics: ${evaluationMetrics}. 
+        Please address the student directly in your feedback.
         Student's answer: ${response}`;
 
         feedback = await chatgpt(prompt);
